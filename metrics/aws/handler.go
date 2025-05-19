@@ -2,7 +2,6 @@
 package aws
 
 import (
-    "encoding/json"
     "fmt"
     "sync"
 
@@ -56,4 +55,17 @@ func getClient(accountID string) (models.AWSClientInterface, error) {
     clientPool.sessions[accountID] = client
 
     return client, nil
+}
+
+// validateParams verifica che il numero di parametri sia corretto
+func validateParams(params []string, minParams int) error {
+    if len(params) < minParams {
+        return zbxerr.ErrorTooFewParameters
+    }
+    return nil
+}
+
+// Ping esegue un controllo di salute del plugin
+func Ping(ctx plugin.ContextProvider, params []string, _ bool) (interface{}, error) {
+    return 1, nil
 }

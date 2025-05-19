@@ -1,12 +1,8 @@
-// Aggiornamento di collector.go per usare models
-// File: aws/collector.go
+// File: aws/collector.go (completo)
 package aws
 
 import (
     "time"
-
-    "github.com/aws/aws-sdk-go/aws"
-    "github.com/aws/aws-sdk-go/service/cloudwatch"
 
     "github.com/matteokutufa/zabbix-agent2-plugin-aws/models"
 )
@@ -25,8 +21,8 @@ func NewMetricsCollector(client models.AWSClientInterface) *MetricsCollector {
 
 // CollectRDSMetric raccoglie una metrica RDS
 func (c *MetricsCollector) CollectRDSMetric(instanceID, metricName, statistic string, startTime, endTime time.Time) (float64, error) {
-    // Periodo di tempo in secondi
-    period := int64(60) // Un minuto è un buon default per le metriche CloudWatch
+    // Periodo di tempo in secondi (default: 60 secondi)
+    period := int64(60)
 
     // Ottiene la metrica mediante il client AWS
     return c.client.GetRDSMetric(instanceID, metricName, statistic, period, startTime, endTime)
