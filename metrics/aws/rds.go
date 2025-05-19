@@ -2,13 +2,17 @@
 package aws
 
 import (
-	"fmt"
-	"time"
+    "fmt"
+    "time"
 
-	"git.zabbix.com/ap/plugin-support/plugin"
-	"git.zabbix.com/ap/plugin-support/zbxerr"
-	//"github.com/matteokutufa/zabbix-agent2-plugin-aws/aws"
+    "git.zabbix.com/ap/plugin-support/plugin"
+    "git.zabbix.com/ap/plugin-support/zbxerr"
+
+    "github.com/matteokutufa/zabbix-agent2-plugin-aws/aws"
 )
+
+// Handler globale per i client
+var clientPool SessionPool
 
 // RDSDiscovery esegue il discovery delle istanze RDS
 func RDSDiscovery(ctx plugin.ContextProvider, params []string, _ bool) (interface{}, error) {

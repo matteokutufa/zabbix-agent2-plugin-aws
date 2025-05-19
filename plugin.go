@@ -2,18 +2,18 @@
 package main
 
 import (
-	"git.zabbix.com/ap/plugin-support/conf"
-	"git.zabbix.com/ap/plugin-support/plugin"
-	"git.zabbix.com/ap/plugin-support/plugin/comms"
-	"git.zabbix.com/ap/plugin-support/zbxerr"
+    "git.zabbix.com/ap/plugin-support/conf"
+    "git.zabbix.com/ap/plugin-support/plugin"
+    "git.zabbix.com/ap/plugin-support/plugin/comms"
+    "git.zabbix.com/ap/plugin-support/zbxerr"
 
-	"github.com/matteokutufa/zabbix-agent2-plugin-aws/metrics/aws"
+    "github.com/matteokutufa/zabbix-agent2-plugin-aws/metrics/aws"
 )
 
 // Plugin è la struttura principale del plugin
 type Plugin struct {
-	plugin.Base
-	options aws.Options
+    plugin.Base
+    options aws.Options
 }
 
 // impl è l'istanza del plugin
