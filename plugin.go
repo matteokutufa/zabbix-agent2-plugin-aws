@@ -1,4 +1,4 @@
-// plugin.go
+// plugin.go asdasd
 package main
 
 import (
