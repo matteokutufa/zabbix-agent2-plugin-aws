@@ -1,4 +1,4 @@
-// plugin.go asdasd
+// plugin.go
 package main
 
 import (
@@ -29,18 +29,18 @@ const (
 
 // Definizione delle opzioni di configurazione per il plugin
 var (
-	pluginComms       = comms.New("aws")
-	configurationOpts = &conf.Opts{
+	pluginComms = plugin.NewComms("aws")
+	configurationOpts = &plugin.ConfigOpts{
 		Listen: false,
 	}
 
 	// Parametri configurabili nel file di configurazione
-	parameterOpts = []conf.ParameterOpts{
-		{Key: "AccountFile", Type: conf.String, Default: "/etc/zabbix/aws_accounts.ini"},
-		{Key: "MetricsFile", Type: conf.String, Default: "/etc/zabbix/metrics_config.yaml"},
-		{Key: "Timeout", Type: conf.Int, Default: 30},
-		{Key: "KeepAlive", Type: conf.Int, Default: 300},
-		{Key: "Sessions", Type: conf.Int, Default: 15},
+	parameterOpts = []plugin.ParameterOpt{
+		{Key: "AccountFile", Type: plugin.String, Default: "/etc/zabbix/aws_accounts.ini"},
+		{Key: "MetricsFile", Type: plugin.String, Default: "/etc/zabbix/metrics_config.yaml"},
+		{Key: "Timeout", Type: plugin.Int, Default: 30},
+		{Key: "KeepAlive", Type: plugin.Int, Default: 300},
+		{Key: "Sessions", Type: plugin.Int, Default: 15},
 	}
 )
 
@@ -127,9 +127,9 @@ func init() {
 
 func main() {
 	// Inizializza il framework del plugin
-	options := &plugin.Options{
+	options := &plugin.PluginOptions{
 		Name:                 pluginName,
-		VersionCurrent:       pluginVersion,
+		Version:              pluginVersion,
 		ConfigurationOptions: configurationOpts,
 		ParameterOptions:     parameterOpts,
 	}
