@@ -1,4 +1,4 @@
-// client.go asdasd
+// client.go
 package aws
 
 import (
@@ -35,7 +35,7 @@ type Client struct {
 var _ models.AWSClientInterface = (*Client)(nil)
 
 // NewClient crea un nuovo client AWS utilizzando le credenziali dell'account
-func NewClient(account config.AWSAccount) (*Client, error) {
+func NewClient(account models.AWSAccount) (*Client, error) {
 	// Crea una configurazione AWS
 	awsConfig := &aws.Config{
 		Region: aws.String(account.Region),

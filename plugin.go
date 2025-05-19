@@ -7,6 +7,8 @@ import (
     "git.zabbix.com/ap/plugin-support/plugin/comms"
     "git.zabbix.com/ap/plugin-support/zbxerr"
 
+    // Importante: importa il pacchetto aws per l'inizializzazione
+    _ "github.com/matteokutufa/zabbix-agent2-plugin-aws/aws"
     "github.com/matteokutufa/zabbix-agent2-plugin-aws/metrics/aws"
 )
 

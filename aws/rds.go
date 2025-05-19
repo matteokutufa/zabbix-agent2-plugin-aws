@@ -8,7 +8,8 @@ import (
 	"git.zabbix.com/ap/plugin-support/plugin"
 	"git.zabbix.com/ap/plugin-support/zbxerr"
 
-	"github.com/matteokutufa/zabbix-agent2-plugin-aws/aws"
+	"github.com/matteokutufa/zabbix-agent2-plugin-aws/factory"
+	"github.com/matteokutufa/zabbix-agent2-plugin-aws/models"
 )
 
 // RDSDiscovery esegue il discovery delle istanze RDS
@@ -26,7 +27,7 @@ func RDSDiscovery(ctx plugin.ContextProvider, params []string, _ bool) (interfac
 	}
 
 	// Crea un discoverer RDS
-	discoverer := aws.NewRDSDiscoverer(client)
+	discoverer := factory.NewRDSDiscoverer(client)
 
 	// Esegui il discovery
 	result, err := discoverer.DiscoverInstances()
@@ -60,13 +61,13 @@ func RDSGet(ctx plugin.ContextProvider, params []string, _ bool) (interface{}, e
 	}
 
 	// Carica la configurazione delle metriche
-	metricsConfig, err := aws.LoadMetricsConfig(MetricsFile())
+	metricsConfig, err := factory.LoadMetricsConfig(MetricsFile())
 	if err != nil {
 		return nil, zbxerr.ErrorCannotFetchData.Wrap(err)
 	}
 
 	// Trova la configurazione della metrica
-	var metricConfig *aws.MetricConfig
+	var metricConfig *models.MetricConfig
 	for _, m := range metricsConfig.Services["rds"].Metrics {
 		if m.Name == metricName {
 			metricConfig = &m
@@ -84,7 +85,7 @@ func RDSGet(ctx plugin.ContextProvider, params []string, _ bool) (interface{}, e
 	}
 
 	// Crea un collector per le metriche
-	collector := aws.NewMetricsCollector(client)
+	collector := factory.NewMetricsCollector(client)
 
 	// Imposta l'orario di fine al momento attuale
 	endTime := time.Now()
