@@ -1,13 +1,18 @@
+// File: models/interfaces.go (aggiornato con RDSClient)
 package models
 
 import (
     "time"
+
+    "github.com/aws/aws-sdk-go/service/rds"
 )
 
 // AWSClientInterface definisce l'interfaccia per le operazioni del client AWS
 type AWSClientInterface interface {
     GetRDSMetric(instanceID, metricName, statistic string, period int64, startTime, endTime time.Time) (float64, error)
     ListAvailableRDSMetrics(instanceID string) ([]CloudWatchMetric, error)
+    // Aggiungiamo il metodo RDSClient
+    RDSClient() *rds.RDS
     // Aggiungi altri metodi necessari
 }
 
