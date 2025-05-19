@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2023-01-01T00:00:00Z</date>
+    <groups>
+        <group>
+            <n>Templates/Databases</n>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Template AWS RDS with Dependent Items</template>
+            <n>Template AWS RDS with Dependent Items</n>
+            <description>Template for monitoring Amazon RDS databases via CloudWatch using dependent items for better performance.</description>
+            <groups>
+                <group>
+                    <n>Templates/Databases</n>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <n>AWS RDS</n>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <n>AWS Plugin Status</n>
+                    <key>aws.ping</key>
+                    <delay>1m</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <description>Check if the AWS plugin is running correctly.</description>
+                    <applications>
+                        <application>
+                            <n>AWS RDS</n>
+                        </application>
+                    </applications>
+                    <valuemap>
+                        <n>Service state</n>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=0</expression>
+                            <n>AWS Plugin is not running</n>
+                            <priority>HIGH</priority>
+                            <description>The AWS plugin is not responding. Check Zabbix Agent 2 configuration.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <n>RDS Instances Discovery</n>
+                    <key>aws.rds.discovery[{$AWS_ACCOUNT_ID}]</key>
+                    <delay>1h</delay>
+                    <description>Discover all RDS instances in the specified AWS account.</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <n>RDS {#DBINSTANCE} bulk metrics</n>
+                            <key>aws.rds.bulk[{$AWS_ACCOUNT_ID},{#DBINSTANCE}]</key>
+                            <delay>5m</delay>
+                            <history>1h</history>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <description>JSON with all metrics for the RDS instance.</description>
+                            <applications>
+                                <application>
+                                    <n>AWS RDS</n>
+                                </application>
+                            </applications>
+                        </item_prototype>
+
+                        <!-- CPU Utilization - Dependent item -->
+                        <item_prototype>
+                            <n>RDS {#DBINSTANCE} CPU Utilization</n>
+                            <key>rds.cpu.util[{#DBINSTANCE}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <units>%</units>
+                            <description>CPU utilization of the RDS instance.</description>
+                            <applications>
+                                <application>
+                                    <n>AWS RDS</n>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metrics[?(@.metric=='CPUUtilization')].value.first()</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>aws.rds.bulk[{$AWS_ACCOUNT_ID},{#DBINSTANCE}]</key>
+                            </master_item>
+                            <triggers>
+                                <trigger>
+                                    <expression>{avg(5m)}&gt;80</expression>
+                                    <n>High CPU utilization on RDS {#DBINSTANCE}</n>
+                                    <priority>WARNING</priority>
+                                    <description>CPU utilization has been over 80% for the last 5 minutes.</description>
+                                </trigger>
+                                <trigger>
+                                    <expression>{avg(5m)}&gt;95</expression>
+                                    <n>Critical CPU utilization on RDS {#DBINSTANCE}</n>
+                                    <priority>HIGH</priority>
+                                    <description>CPU utilization has been over 95% for the last 5 minutes.</description>
+                                </trigger>
+                            </triggers>
+                        </item_prototype>
+
+                        <!-- Database Connections - Dependent item -->
+                        <item_prototype>
+                            <n>RDS {#DBINSTANCE} Database Connections</n>
+                            <key>rds.connections[{#DBINSTANCE}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <description>Number of database connections to the RDS instance.</description>
+                            <applications>
+                                <application>
+                                    <n>AWS RDS</n>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metrics[?(@.metric=='DatabaseConnections')].value.first()</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>aws.rds.bulk[{$AWS_ACCOUNT_ID},{#DBINSTANCE}]</key>
+                            </master_item>
+                        </item_prototype>
+
+                        <!-- Free Memory - Dependent item -->
+                        <item_prototype>
+                            <n>RDS {#DBINSTANCE} Free Memory</n>
+                            <key>rds.memory.free[{#DBINSTANCE}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <units>B</units>
+                            <description>Amount of available memory for the RDS instance.</description>
+                            <applications>
+                                <application>
+                                    <n>AWS RDS</n>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metrics[?(@.metric=='FreeableMemory')].value.first()</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>aws.rds.bulk[{$AWS_ACCOUNT_ID},{#DBINSTANCE}]</key>
+                            </master_item>
+                            <triggers>
+                                <trigger>
+                                    <expression>{last()}&lt;1073741824</expression>
+                                    <n>Low memory on RDS {#DBINSTANCE} (less than 1GB)</n>
+                                    <priority>WARNING</priority>
+                                    <description>Free memory is critically low. Consider scaling up the instance.</description>
+                                </trigger>
+                            </triggers>
+                        </item_prototype>
+
+                        <!-- Free Storage Space - Dependent item -->
+                        <item_prototype>
+                            <n>RDS {#DBINSTANCE} Free Storage Space</n>
+                            <key>rds.storage.free[{#DBINSTANCE}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <units>B</units>
+                            <description>Amount of available storage space for the RDS instance.</description>
+                            <applications>
+                                <application>
+                                    <n>AWS RDS</n>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metrics[?(@.metric=='FreeStorageSpace')].value.first()</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>aws.rds.bulk[{$AWS_ACCOUNT_ID},{#DBINSTANCE}]</key>
+                            </master_item>
+                            <triggers>
+                                <trigger>
+                                    <expression>{last()}&lt;10737418240</expression>
+                                    <n>Low storage space on RDS {#DBINSTANCE} (less than 10GB)</n>
+                                    <priority>WARNING</priority>
+                                    <description>Free storage space is low. Consider increasing storage capacity.</description>
+                                </trigger>
+                                <trigger>
+                                    <expression>{last()}&lt;5368709120</expression>
+                                    <n>Critical storage space on RDS {#DBINSTANCE} (less than 5GB)</n>
+                                    <priority>HIGH</priority>
+                                    <description>Free storage space is critically low. Increase storage capacity immediately.</description>
+                                </trigger>
+                            </triggers>
+                        </item_prototype>
+
+                        <!-- Read IOPS - Dependent item -->
+                        <item_prototype>
+                            <n>RDS {#DBINSTANCE} Read IOPS</n>
+                            <key>rds.iops.read[{#DBINSTANCE}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <units>ops</units>
+                            <description>Average number of read I/O operations per second.</description>
+                            <applications>
+                                <application>
+                                    <n>AWS RDS</n>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metrics[?(@.metric=='ReadIOPS')].value.first()</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>aws.rds.bulk[{$AWS_ACCOUNT_ID},{#DBINSTANCE}]</key>
+                            </master_item>
+                        </item_prototype>
+
+                        <!-- Write IOPS - Dependent item -->
+                        <item_prototype>
+                            <n>RDS {#DBINSTANCE} Write IOPS</n>
+                            <key>rds.iops.write[{#DBINSTANCE}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <units>ops</units>
+                            <description>Average number of write I/O operations per second.</description>
+                            <applications>
+                                <application>
+                                    <n>AWS RDS</n>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metrics[?(@.metric=='WriteIOPS')].value.first()</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>aws.rds.bulk[{$AWS_ACCOUNT_ID},{#DBINSTANCE}]</key>
+                            </master_item>
+                        </item_prototype>
+
+                        <!-- Read Latency - Dependent item -->
+                        <item_prototype>
+                            <n>RDS {#DBINSTANCE} Read Latency</n>
+                            <key>rds.latency.read[{#DBINSTANCE}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <units>s</units>
+                            <description>Average amount of time taken per read I/O operation.</description>
+                            <applications>
+                                <application>
+                                    <n>AWS RDS</n>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metrics[?(@.metric=='ReadLatency')].value.first()</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>aws.rds.bulk[{$AWS_ACCOUNT_ID},{#DBINSTANCE}]</key>
+                            </master_item>
+                            <triggers>
+                                <trigger>
+                                    <expression>{avg(5m)}&gt;0.02</expression>
+                                    <n>High read latency on RDS {#DBINSTANCE}</n>
+                                    <priority>WARNING</priority>
+                                    <description>Read latency is higher than 20ms for the last 5 minutes.</description>
+                                </trigger>
+                            </triggers>
+                        </item_prototype>
+
+                        <!-- Write Latency - Dependent item -->
+                        <item_prototype>
+                            <n>RDS {#DBINSTANCE} Write Latency</n>
+                            <key>rds.latency.write[{#DBINSTANCE}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <units>s</units>
+                            <description>Average amount of time taken per write I/O operation.</description>
+                            <applications>
+                                <application>
+                                    <n>AWS RDS</n>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metrics[?(@.metric=='WriteLatency')].value.first()</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>aws.rds.bulk[{$AWS_ACCOUNT_ID},{#DBINSTANCE}]</key>
+                            </master_item>
+                            <triggers>
+                                <trigger>
+                                    <expression>{avg(5m)}&gt;0.02</expression>
+                                    <n>High write latency on RDS {#DBINSTANCE}</n>
+                                    <priority>WARNING</priority>
+                                    <description>Write latency is higher than 20ms for the last 5 minutes.</description>
+                                </trigger>
+                            </triggers>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <n>RDS {#DBINSTANCE} CPU Utilization</n>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template AWS RDS with Dependent Items</host>
+                                        <key>rds.cpu.util[{#DBINSTANCE}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <n>RDS {#DBINSTANCE} Database Connections</n>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template AWS RDS with Dependent Items</host>
+                                        <key>rds.connections[{#DBINSTANCE}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <n>RDS {#DBINSTANCE} IOPS</n>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template AWS RDS with Dependent Items</host>
+                                        <key>rds.iops.read[{#DBINSTANCE}]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <color>F63100</color>
+                                    <item>
+                                        <host>Template AWS RDS with Dependent Items</host>
+                                        <key>rds.iops.write[{#DBINSTANCE}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <n>RDS {#DBINSTANCE} Latency</n>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template AWS RDS with Dependent Items</host>
+                                        <key>rds.latency.read[{#DBINSTANCE}]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <color>F63100</color>
+                                    <item>
+                                        <host>Template AWS RDS with Dependent Items</host>
+                                        <key>rds.latency.write[{#DBINSTANCE}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <n>RDS {#DBINSTANCE} Memory</n>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template AWS RDS with Dependent Items</host>
+                                        <key>rds.memory.free[{#DBINSTANCE}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <n>RDS {#DBINSTANCE} Storage</n>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template AWS RDS with Dependent Items</host>
+                                        <key>rds.storage.free[{#DBINSTANCE}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+            </discovery_rules>
+            <macros>
+                <macro>
+                    <macro>{$AWS_ACCOUNT_ID}</macro>
+                    <value>123456789012</value>
+                    <description>AWS Account ID</description>
+                </macro>
+            </macros>
+            <dashboards>
+                <dashboard>
+                    <n>AWS RDS Overview</n>
+                    <widgets>
+                        <widget>
+                            <type>GRAPH_CLASSIC</type>
+                            <n>CPU Utilization</n>
+                            <width>12</width>
+                            <height>5</height>
+                            <fields>
+                                <field>
+                                    <type>GRAPH</type>
+                                    <n>RDS {#DBINSTANCE} CPU Utilization</n>
+                                </field>
+                            </fields>
+                        </widget>
+                        <widget>
+                            <type>GRAPH_CLASSIC</type>
+                            <n>Database Connections</n>
+                            <x>12</x>
+                            <width>12</width>
+                            <height>5</height>
+                            <fields>
+                                <field>
+                                    <type>GRAPH</type>
+                                    <n>RDS {#DBINSTANCE} Database Connections</n>
+                                </field>
+                            </fields>
+                        </widget>
+                        <widget>
+                            <type>GRAPH_CLASSIC</type>
+                            <n>IOPS</n>
+                            <y>5</y>
+                            <width>12</width>
+                            <height>5</height>
+                            <fields>
+                                <field>
+                                    <type>GRAPH</type>
+                                    <n>RDS {#DBINSTANCE} IOPS</n>
+                                </field>
+                            </fields>
+                        </widget>
+                        <widget>
+                            <type>GRAPH_CLASSIC</type>
+                            <n>Latency</n>
+                            <x>12</x>
+                            <y>5</y>
+                            <width>12</width>
+                            <height>5</height>
+                            <fields>
+                                <field>
+                                    <type>GRAPH</type>
+                                    <n>RDS {#DBINSTANCE} Latency</n>
+                                </field>
+                            </fields>
+                        </widget>
+                        <widget>
+                            <type>GRAPH_CLASSIC</type>
+                            <n>Memory</n>
+                            <y>10</y>
+                            <width>12</width>
+                            <height>5</height>
+                            <fields>
+                                <field>
+                                    <type>GRAPH</type>
+                                    <n>RDS {#DBINSTANCE} Memory</n>
+                                </field>
+                            </fields>
+                        </widget>
+                        <widget>
+                            <type>GRAPH_CLASSIC</type>
+                            <n>Storage</n>
+                            <x>12</x>
+                            <y>10</y>
+                            <width>12</width>
+                            <height>5</height>
+                            <fields>
+                                <field>
+                                    <type>GRAPH</type>
+                                    <n>RDS {#DBINSTANCE} Storage</n>
+                                </field>
+                            </fields>
+                        </widget>
+                    </widgets>
+                </dashboard>
+            </dashboards>
+        </template>
+    </templates>
+    <value_maps>
+        <value_map>
+            <n>Service state</n>
+            <mapping>
+                <value>0</value>
+                <newvalue>Down</newvalue>
+            </mapping>
+            <mapping>
+                <value>1</value>
+                <newvalue>Up</newvalue>
+            </mapping>
+        </value_map>
+    </value_maps>
+</zabbix_export>

@@ -1,0 +1,203 @@
+services:
+  rds:
+    metrics:
+      - name: CPUUtilization
+        statistics: Average
+        period: 300
+      - name: DatabaseConnections
+        statistics: Maximum
+        period: 300
+      - name: FreeableMemory
+        statistics: Average
+        period: 300
+      - name: FreeStorageSpace
+        statistics: Minimum
+        period: 300
+      - name: ReadIOPS
+        statistics: Average
+        period: 300
+      - name: WriteIOPS
+        statistics: Average
+        period: 300
+      - name: ReadLatency
+        statistics: Average
+        period: 300
+      - name: WriteLatency
+        statistics: Average
+        period: 300
+    discovery:
+      interval: 3600  # Autodiscovery every hour
+
+  s3:
+    metrics:
+      - name: BucketSizeBytes
+        statistics: Average
+        period: 86400  # 24 ore per questa metrica che viene aggiornata giornalmente
+      - name: NumberOfObjects
+        statistics: Average
+        period: 86400
+      - name: AllRequests
+        statistics: Sum
+        period: 300
+      - name: GetRequests
+        statistics: Sum
+        period: 300
+      - name: PutRequests
+        statistics: Sum
+        period: 300
+      - name: DeleteRequests
+        statistics: Sum
+        period: 300
+      - name: 4xxErrors
+        statistics: Sum
+        period: 300
+      - name: 5xxErrors
+        statistics: Sum
+        period: 300
+      - name: FirstByteLatency
+        statistics: Average
+        period: 300
+      - name: TotalRequestLatency
+        statistics: Average
+        period: 300
+    discovery:
+      interval: 3600
+
+  elb:  # Application e Network Load Balancer
+    metrics:
+      # Metriche per Application Load Balancer
+      - name: ActiveConnectionCount
+        statistics: Sum
+        period: 300
+      - name: ConsumedLCUs
+        statistics: Sum
+        period: 300
+      - name: HTTPCode_ELB_4XX_Count
+        statistics: Sum
+        period: 300
+      - name: HTTPCode_ELB_5XX_Count
+        statistics: Sum
+        period: 300
+      - name: HTTPCode_Target_2XX_Count
+        statistics: Sum
+        period: 300
+      - name: HTTPCode_Target_3XX_Count
+        statistics: Sum
+        period: 300
+      - name: HTTPCode_Target_4XX_Count
+        statistics: Sum
+        period: 300
+      - name: HTTPCode_Target_5XX_Count
+        statistics: Sum
+        period: 300
+      - name: TargetResponseTime
+        statistics: Average
+        period: 300
+      - name: RequestCount
+        statistics: Sum
+        period: 300
+      # Metriche per Network Load Balancer
+      - name: ActiveFlowCount
+        statistics: Average
+        period: 300
+      - name: ProcessedBytes
+        statistics: Sum
+        period: 300
+      - name: TCP_Client_Reset_Count
+        statistics: Sum
+        period: 300
+      - name: TCP_Target_Reset_Count
+        statistics: Sum
+        period: 300
+      - name: HealthyHostCount
+        statistics: Average
+        period: 300
+      - name: UnHealthyHostCount
+        statistics: Average
+        period: 300
+    discovery:
+      interval: 3600
+
+  ecs:
+    metrics:
+      # Metriche a livello di cluster
+      - name: CPUUtilization
+        statistics: Average
+        period: 300
+      - name: MemoryUtilization
+        statistics: Average
+        period: 300
+      - name: CPUReservation
+        statistics: Average
+        period: 300
+      - name: MemoryReservation
+        statistics: Average
+        period: 300
+      # Metriche a livello di servizio
+      - name: CPUUtilization
+        statistics: Average
+        period: 300
+        dimension: Service
+      - name: MemoryUtilization
+        statistics: Average
+        period: 300
+        dimension: Service
+      - name: RunningTaskCount
+        statistics: Average
+        period: 300
+      - name: PendingTaskCount
+        statistics: Average
+        period: 300
+    discovery:
+      interval: 3600
+
+  msk:
+    metrics:
+      # Metriche a livello di cluster
+      - name: ActiveControllerCount
+        statistics: Average
+        period: 300
+      - name: OfflinePartitionsCount
+        statistics: Maximum
+        period: 300
+      - name: UnderReplicatedPartitions
+        statistics: Maximum
+        period: 300
+      - name: KafkaRequestCount
+        statistics: Sum
+        period: 300
+      - name: CpuUser
+        statistics: Average
+        period: 300
+      - name: CpuSystem
+        statistics: Average
+        period: 300
+      - name: RootDiskUsed
+        statistics: Average
+        period: 300
+      - name: MemoryUsed
+        statistics: Average
+        period: 300
+      - name: NetworkRxPackets
+        statistics: Average
+        period: 300
+      - name: NetworkTxPackets
+        statistics: Average
+        period: 300
+      - name: NetworkRxBytes
+        statistics: Average
+        period: 300
+      - name: NetworkTxBytes
+        statistics: Average
+        period: 300
+      - name: BytesInPerSec
+        statistics: Average
+        period: 300
+      - name: BytesOutPerSec
+        statistics: Average
+        period: 300
+      - name: MessagesInPerSec
+        statistics: Average
+        period: 300
+    discovery:
+      interval: 3600
