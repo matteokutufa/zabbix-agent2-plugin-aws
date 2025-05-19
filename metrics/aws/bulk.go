@@ -8,7 +8,8 @@ import (
 	"git.zabbix.com/ap/plugin-support/plugin"
 	"git.zabbix.com/ap/plugin-support/zbxerr"
 
-	"github.com/matteokutufa/zabbix-agent2-plugin-aws/aws"
+	"github.com/matteokutufa/zabbix-agent2-plugin-aws/factory"
+	"github.com/matteokutufa/zabbix-agent2-plugin-aws/models"
 )
 
 // MetricResult rappresenta il risultato di una metrica
@@ -41,13 +42,13 @@ func RDSBulkGet(ctx plugin.ContextProvider, params []string, _ bool) (interface{
 	}
 
 	// Carica la configurazione delle metriche
-	metricsConfig, err := aws.LoadMetricsConfig(MetricsFile())
+	metricsConfig, err := factory.LoadMetricsConfig(MetricsFile())
 	if err != nil {
 		return nil, zbxerr.ErrorCannotFetchData.Wrap(err)
 	}
 
 	// Crea un collector per le metriche
-	collector := aws.NewMetricsCollector(client)
+	collector := factory.NewMetricsCollector(client)
 
 	// Imposta l'orario di fine al momento attuale
 	endTime := time.Now()

@@ -1,3 +1,4 @@
+// Aggiornamento di cloudwatch.go per usare il tipo CloudWatchMetric dal pacchetto models
 // cloudwatch.go
 package aws
 
@@ -6,17 +7,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-)
 
-// CloudWatchMetric rappresenta una metrica CloudWatch
-type CloudWatchMetric struct {
-	MetricName string
-	Statistics string
-	Dimensions map[string]string
-	Period     int64
-	StartTime  time.Time
-	EndTime    time.Time
-}
+	"github.com/matteokutufa/zabbix-agent2-plugin-aws/models"
+)
 
 // GetRDSMetric recupera il valore di una metrica CloudWatch per un'istanza RDS specifica
 func (c *Client) GetRDSMetric(instanceID, metricName, statistic string, period int64, startTime, endTime time.Time) (float64, error) {
@@ -84,7 +77,7 @@ func (c *Client) GetRDSMetric(instanceID, metricName, statistic string, period i
 }
 
 // ListAvailableRDSMetrics elenca tutte le metriche disponibili per un'istanza RDS
-func (c *Client) ListAvailableRDSMetrics(instanceID string) ([]*cloudwatch.Metric, error) {
+func (c *Client) ListAvailableRDSMetrics(instanceID string) ([]models.CloudWatchMetric, error) {
 	// Crea l'input per la richiesta ListMetrics
 	input := &cloudwatch.ListMetricsInput{
 		Namespace: aws.String("AWS/RDS"),
@@ -102,5 +95,19 @@ func (c *Client) ListAvailableRDSMetrics(instanceID string) ([]*cloudwatch.Metri
 		return nil, err
 	}
 
-	return output.Metrics, nil
+	// Converti il risultato nel formato del modello
+	result := make([]models.CloudWatchMetric, len(output.Metrics))
+	for i, metric := range output.Metrics {
+		dimensions := make(map[string]string)
+		for _, dim := range metric.Dimensions {
+			dimensions[*dim.Name] = *dim.Value
+		}
+
+		result[i] = models.CloudWatchMetric{
+			MetricName: *metric.MetricName,
+			Dimensions: dimensions,
+		}
+	}
+
+	return result, nil
 }
