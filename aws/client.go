@@ -14,8 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/kafka"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/s3"
-
-	"github.com/matteokutufa/zabbix-agent2-plugin-aws/aws"
 )
 
 // Client rappresenta un client AWS

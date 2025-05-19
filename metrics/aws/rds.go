@@ -7,8 +7,7 @@ import (
 
 	"git.zabbix.com/ap/plugin-support/plugin"
 	"git.zabbix.com/ap/plugin-support/zbxerr"
-
-	"github.com/matteokutufa/zabbix-agent2-plugin-aws/aws"
+	//"github.com/matteokutufa/zabbix-agent2-plugin-aws/aws"
 )
 
 // RDSDiscovery esegue il discovery delle istanze RDS
