@@ -2,33 +2,37 @@
 package aws
 
 import (
-	"fmt"
+    "fmt"
+    "time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	"github.com/aws/aws-sdk-go/service/ecs"
-	"github.com/aws/aws-sdk-go/service/elbv2"
-	"github.com/aws/aws-sdk-go/service/kafka"
-	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/aws/aws-sdk-go/service/s3"
+    "github.com/aws/aws-sdk-go/aws"
+    "github.com/aws/aws-sdk-go/aws/credentials"
+    "github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+    "github.com/aws/aws-sdk-go/aws/session"
+    "github.com/aws/aws-sdk-go/service/cloudwatch"
+    "github.com/aws/aws-sdk-go/service/ecs"
+    "github.com/aws/aws-sdk-go/service/elbv2"
+    "github.com/aws/aws-sdk-go/service/kafka"
+    "github.com/aws/aws-sdk-go/service/rds"
+    "github.com/aws/aws-sdk-go/service/s3"
 
-	"github.com/matteokutufa/zabbix-agent2-plugin-aws/models"
+    "github.com/matteokutufa/zabbix-agent2-plugin-aws/models"
 )
 
 // Client rappresenta un client AWS
 type Client struct {
-	session          *session.Session
-	rdsClient        *rds.RDS
-	cloudWatchClient *cloudwatch.CloudWatch
-	s3Client         *s3.S3
-	elbv2Client      *elbv2.ELBV2
-	ecsClient        *ecs.ECS
-	kafkaClient      *kafka.Kafka
-	region           string
+    session          *session.Session
+    rdsClient        *rds.RDS
+    cloudWatchClient *cloudwatch.CloudWatch
+    s3Client         *s3.S3
+    elbv2Client      *elbv2.ELBV2
+    ecsClient        *ecs.ECS
+    kafkaClient      *kafka.Kafka
+    region           string
 }
+
+// Assicuriamoci che Client implementi l'interfaccia AWSClientInterface
+var _ models.AWSClientInterface = (*Client)(nil)
 
 // NewClient crea un nuovo client AWS utilizzando le credenziali dell'account
 func NewClient(account config.AWSAccount) (*Client, error) {
