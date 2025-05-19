@@ -3,8 +3,6 @@ package aws
 
 import (
     "io/ioutil"
-    "os"
-    "path/filepath"
 
     "gopkg.in/ini.v1"
     "gopkg.in/yaml.v2"

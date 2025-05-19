@@ -1,7 +1,18 @@
-// File: metrics/aws/utils.go (nuovo)
+// File: aws/utils.go
 package aws
 
-// MetricsFile restituisce il percorso del file delle metriche
-func MetricsFile() string {
-	return globalOptions.MetricsFile
+// MetricsConfigFile è il percorso del file di configurazione delle metriche
+var MetricsConfigFile string
+
+// SetMetricsConfigFile imposta il percorso del file di configurazione delle metriche
+func SetMetricsConfigFile(path string) {
+    MetricsConfigFile = path
+}
+
+// AccountConfigFile è il percorso del file di configurazione degli account
+var AccountConfigFile string
+
+// SetAccountConfigFile imposta il percorso del file di configurazione degli account
+func SetAccountConfigFile(path string) {
+    AccountConfigFile = path
 }
